@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Laundry Machan | Pro Business System</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<style>
+:root{
+  --primary:#00eaff;
+  --bg:#020617;
+  --glass:#ffffff12;
+}
+*{box-sizing:border-box}
+body{
+  margin:0;
+  font-family:'Segoe UI',system-ui;
+  background:linear-gradient(135deg,#020617,#020617dd);
+  color:#fff;
+}
+nav{
+  display:flex;
+  gap:12px;
+  padding:16px;
+  background:#020617ee;
+  position:sticky;top:0;
+  z-index:10;
+}
+nav button{
+  background:var(--glass);
+  border:none;
+  color:#fff;
+  padding:10px 16px;
+  border-radius:12px;
+  cursor:pointer;
+}
+nav button:hover{background:var(--primary);color:#000}
+
+section{
+  display:none;
+  max-width:1100px;
+  margin:auto;
+  padding:25px;
+  animation:fade .4s ease;
+}
+.show{display:block}
+
+@keyframes fade{
+  from{opacity:0;transform:translateY(10px)}
+  to{opacity:1}
+}
+
+.card{
+  background:var(--glass);
+  backdrop-filter:blur(12px);
+  padding:22px;
+  border-radius:18px;
+  margin-bottom:20px;
+  box-shadow:0 0 40px #000;
+}
+
+h1 span,h2 span{color:var(--primary)}
+
+input,select,button{
+  width:100%;
+  padding:12px;
+  margin-top:10px;
+  border:none;
+  border-radius:10px;
+  font-size:1rem;
+}
+button.primary{
+  background:var(--primary);
+  color:#000;
+  font-weight:700;
+  cursor:pointer;
+}
+
+.grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:15px;
+}
+
+.stat{
+  text-align:center;
+  padding:20px;
+  background:#ffffff10;
+  border-radius:14px;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+}
+th,td{
+  padding:12px;
+  border-bottom:1px solid #ffffff20;
+  text-align:center;
+}
+.badge{
+  padding:4px 10px;
+  border-radius:20px;
+  background:#ffffff20;
+}
+.action button{
+  width:auto;
+  padding:6px 10px;
+  margin:2px;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+  <button onclick="tab('home')">🏠 Home</button>
+  <button onclick="tab('order')">🧺 Order</button>
+  <button onclick="tab('admin')">🔐 Admin</button>
+  <button onclick="tab('dash')">📊 Dashboard</button>
+</nav>
+
+<!-- HOME -->
+<section id="home" class="show">
+  <div class="card">
+    <h1>Laundry <span>Machan</span></h1>
+    <p>Sistem Laundry Digital • Profesional • Otomatis</p>
+  </div>
+</section>
+
+<!-- ORDER -->
+<section id="order">
+  <div class="card">
+    <h2>🧺 Form Order</h2>
+    <input id="nama" placeholder="Nama Pelanggan">
+    <input id="hp" placeholder="No WhatsApp">
+    <select id="layanan">
+      <option value="6000">Reguler - Rp6.000/kg</option>
+      <option value="10000">Express - Rp10.000/kg</option>
+      <option value="15000">Premium - Rp15.000/kg</option>
+    </select>
+    <input id="berat" type="number" placeholder="Berat (kg)">
+    <button class="primary" onclick="buatOrder()">Pesan</button>
+  </div>
+</section>
+
+<!-- ADMIN -->
+<section id="admin">
+  <div class="card" style="max-width:360px">
+    <h2>🔐 Login Admin</h2>
+    <input id="user" placeholder="Username">
+    <input id="pass" type="password" placeholder="Password">
+    <button class="primary" onclick="login()">Login</button>
+  </div>
+</section>
+
+<!-- DASHBOARD -->
+<section id="dash">
+  <div class="grid">
+    <div class="stat">
+      <h3>Total Order</h3>
+      <h2 id="totalOrder">0</h2>
+    </div>
+    <div class="stat">
+      <h3>Total Pendapatan</h3>
+      <h2 id="totalUang">Rp0</h2>
+    </div>
+  </div>
+
+  <div class="card">
+    <h2>📊 Transaksi</h2>
+    <table>
+      <thead>
+        <tr>
+          <th>Nama</th>
+          <th>Layanan</th>
+          <th>Kg</th>
+          <th>Total</th>
+          <th>Status</th>
+          <th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody id="tabel"></tbody>
+    </table>
+  </div>
+</section>
+
+<script>
+let loginOK=false;
+
+function tab(id){
+  document.querySelectorAll('section').forEach(s=>s.classList.remove('show'));
+  document.getElementById(id).classList.add('show');
+  if(id==='dash'){
+    if(!loginOK){alert("Login dulu!");tab('admin');}
+    else load();
+  }
+}
+
+function buatOrder(){
+  if(!nama.value||!hp.value||!berat.value){
+    alert("Lengkapi data!");
+    return;
+  }
+  const harga=+layanan.value;
+  const total=harga*berat.value;
+
+  const data=JSON.parse(localStorage.getItem('orders')||'[]');
+  data.push({
+    nama:nama.value,
+    layanan:layanan.options[layanan.selectedIndex].text,
+    berat:berat.value,
+    total,
+    status:"Cuci"
+  });
+  localStorage.setItem('orders',JSON.stringify(data));
+  alert("Order masuk!");
+}
+
+function login(){
+  if(user.value==="admin"&&pass.value==="123"){
+    loginOK=true;
+    tab('dash');
+  }else alert("Login salah");
+}
+
+function load(){
+  const data=JSON.parse(localStorage.getItem('orders')||'[]');
+  tabel.innerHTML="";
+  let uang=0;
+  data.forEach((o,i)=>{
+    uang+=o.total;
+    tabel.innerHTML+=`
+    <tr>
+      <td>${o.nama}</td>
+      <td>${o.layanan}</td>
+      <td>${o.berat}</td>
+      <td>Rp${o.total}</td>
+      <td><span class="badge">${o.status}</span></td>
+      <td class="action">
+        <button onclick="done(${i})">✔</button>
+        <button onclick="del(${i})">🗑</button>
+      </td>
+    </tr>`;
+  });
+  totalOrder.innerText=data.length;
+  totalUang.innerText="Rp"+uang;
+}
+
+function done(i){
+  const d=JSON.parse(localStorage.getItem('orders'));
+  d[i].status="Selesai";
+  localStorage.setItem('orders',JSON.stringify(d));
+  load();
+}
+function del(i){
+  const d=JSON.parse(localStorage.getItem('orders'));
+  d.splice(i,1);
+  localStorage.setItem('orders',JSON.stringify(d));
+  load();
+}
+</script>
+
+</body>
+</html>
